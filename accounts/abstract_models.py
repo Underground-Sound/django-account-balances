@@ -2,12 +2,12 @@ from decimal import Decimal as D
 import hmac
 
 from django.conf import settings
-from django.core.urlresolvers import reverse
 from django.db import models
 from django.db import transaction
 from django.db.models import Sum
 from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
+from rest_framework.reverse import reverse
 from treebeard.mp_tree import MP_Node
 
 from accounts import exceptions
@@ -63,7 +63,7 @@ class Account(models.Model):
         null=True, blank=True, help_text=_(
             "This text is shown to customers during checkout"))
     account_type = models.ForeignKey(
-        'AccountType', related_name='accounts', null=True)
+        'AccountType', related_name='accounts', null=True, on_delete=models.CASCADE)
 
     # Some accounts are not linked to a specific user but are activated by
     # entering a code at checkout.
@@ -322,15 +322,15 @@ class Transfer(models.Model):
     reference = models.CharField(max_length=64, unique=True, null=True)
 
     source = models.ForeignKey('accounts.Account',
-                               related_name='source_transfers')
+                               related_name='source_transfers', on_delete=models.CASCADE)
     destination = models.ForeignKey('accounts.Account',
-                                    related_name='destination_transfers')
+                                    related_name='destination_transfers', on_delete=models.CASCADE)
     amount = models.DecimalField(decimal_places=2, max_digits=12)
 
     # We keep track of related transfers (eg multiple refunds of the same
     # redemption) using a parent system
     parent = models.ForeignKey('self', null=True,
-                               related_name='related_transfers')
+                               related_name='related_transfers', on_delete=models.CASCADE)
 
     # Optional meta-data about transfer
     merchant_reference = models.CharField(max_length=128, null=True)
@@ -417,9 +417,9 @@ class Transaction(models.Model):
     # (a) the debit from the source account
     # (b) the credit to the destination account
     transfer = models.ForeignKey('accounts.Transfer',
-                                 related_name="transactions")
+                                 related_name="transactions", on_delete=models.CASCADE)
     account = models.ForeignKey('accounts.Account',
-                                related_name='transactions')
+                                related_name='transactions', on_delete=models.CASCADE)
 
     # The sum of this field over the whole table should always be 0.
     # Credits should be positive while debits should be negative
@@ -439,7 +439,7 @@ class Transaction(models.Model):
 
 
 class IPAddressRecord(models.Model):
-    ip_address = models.IPAddressField(_("IP address"), unique=True)
+    ip_address = models.GenericIPAddressField(_("IP address"), unique=True)
     total_failures = models.PositiveIntegerField(default=0)
     consecutive_failures = models.PositiveIntegerField(default=0)
     date_created = models.DateTimeField(auto_now_add=True)

@@ -27,4 +27,4 @@ def ensure_core_accounts_exists(sender, **kwargs):
         income.add_child(name=name)
 
 
-signals.post_syncdb.connect(ensure_core_accounts_exists, sender=models)
+signals.post_migrate.connect(ensure_core_accounts_exists, sender=models)
