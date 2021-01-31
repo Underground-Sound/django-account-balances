@@ -1,8 +1,8 @@
-from django.db.models import get_model
+from django.apps import apps
 
 from accounts import names
 
-Account = get_model('accounts', 'Account')
+Account = apps.get_model('accounts', 'Account')
 
 
 def redemptions_account():

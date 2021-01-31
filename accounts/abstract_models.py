@@ -1,3 +1,4 @@
+import hashlib
 from decimal import Decimal as D
 import hmac
 
@@ -263,8 +264,8 @@ class PostingManager(models.Manager):
         # Write out transfer (which involves multiple writes).  We use a
         # database transaction to ensure that all get written out correctly.
         self.verify_transfer(source, destination, amount, user)
-        with transaction.commit_on_success():
-            transfer = self.get_query_set().create(
+        with transaction.atomic():
+            transfer = self.get_queryset().create(
                 source=source,
                 destination=destination,
                 amount=amount,
@@ -371,8 +372,9 @@ class Transfer(models.Model):
             super(Transfer, self).save()
 
     def _generate_reference(self):
-        obj = hmac.new(key=settings.SECRET_KEY,
-                       msg=unicode(self.id))
+        obj = hmac.new(bytes(settings.SECRET_KEY, encoding='utf-8'),
+                       str(self.id).encode('utf-8'),
+                       hashlib.sha256)
         return obj.hexdigest().upper()
 
     @property

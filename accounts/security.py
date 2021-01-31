@@ -1,6 +1,6 @@
-from django.db.models import get_model
+from django.apps import apps
 
-IPAddressRecord = get_model('accounts', 'IPAddressRecord')
+IPAddressRecord = apps.get_model('accounts', 'IPAddressRecord')
 
 
 def record_failed_request(request):

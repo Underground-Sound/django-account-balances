@@ -1,9 +1,9 @@
 import random
 import string
 
-from django.db.models import get_model
+from django.apps import apps
 
-Account = get_model('accounts', 'Account')
+Account = apps.get_model('accounts', 'Account')
 
 
 def generate(size=12, chars=None):

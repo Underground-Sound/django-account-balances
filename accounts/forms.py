@@ -1,8 +1,8 @@
 from django import forms
 from django.utils.translation import ugettext_lazy as _
-from django.db.models import get_model
+from django.apps import apps
 
-Account = get_model('accounts', 'Account')
+Account = apps.get_model('accounts', 'Account')
 
 
 class AccountForm(forms.Form):
